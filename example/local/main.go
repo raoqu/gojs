@@ -6,4 +6,5 @@ func main() {
 	config := gojs.LoadConfig("gojs.yaml")
 	instance := gojs.CreateInstance(config)
 	instance.Run()
+	instance.Wait()
 }
