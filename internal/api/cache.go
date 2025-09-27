@@ -45,7 +45,7 @@ func (sc *ScriptCache) Initialize() error {
 				UpdatedAt: time.Now(),
 			})
 		})
-		log.Printf("Script cache initialized with %d scripts", sc.scripts.Size())
+		log.Printf("[gojs] Script cache initialized with %d scripts", sc.scripts.Size())
 		sc.initialized = true
 	})
 

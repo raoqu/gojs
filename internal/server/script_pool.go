@@ -13,7 +13,11 @@ var scriptPool *api.ScriptPool
 
 // initScriptPool initializes the 	global script pool if not already initialized
 func InitScriptPool(poolName string) *api.ScriptPool {
-	scriptPool = api.NewScriptPool(poolName, util.RedisConfig)
+	var store api.ScriptStore = api.NewScriptLocalStore()
+	if util.RedisConfig != nil {
+		store = api.NewScriptRedisStore(poolName, util.RedisConfig)
+	}
+	scriptPool = api.NewScriptPool(poolName, store)
 
 	// Inject console functions
 	scriptPool.Inject("console.log", api.Console_log)

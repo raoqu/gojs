@@ -17,7 +17,6 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/puzpuzpuz/xsync/v4"
-	"github.com/redis/go-redis/v9"
 )
 
 // HostFunc：宿主方法签名，允许返回错误；错误会被抛为 JS 异常（goja.NewGoError）
@@ -48,12 +47,7 @@ type ScriptPool struct {
 }
 
 // NewScriptPool 创建一个脚本池（xsync 容器替代锁）
-func NewScriptPool(groupName string, redisClient *redis.Client) *ScriptPool {
-	if redisClient == nil {
-		panic("redisClient is nil")
-	}
-
-	store := NewScriptRedisStore(groupName, redisClient)
+func NewScriptPool(groupName string, store ScriptStore) *ScriptPool {
 	pool := &ScriptPool{
 		scripts: xsync.NewMap[string, *programEntry](),
 		injects: xsync.NewMap[string, HostFunc](),

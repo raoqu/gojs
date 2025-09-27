@@ -1,0 +1,12 @@
+gojs:
+  title: gojs_server
+  endpoint: script
+  redisKey: demo
+  server: true
+  port: 7688
+  webDir: ../../static
+redis:
+  addr: 127.0.0.1:6379
+  db: 3
+  dbConfig: 11
+mysql: {}

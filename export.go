@@ -35,14 +35,14 @@ func (js *GoJSInstance) Run() (*server.ScriptManager, error) {
 	// 是否依赖 Redis
 	if config.Redis.Addr != "" {
 		if err := util.InitRedisClient(config.Redis.Addr, config.Redis.DB, config.Redis.DBConfig, config.Redis.Password); err != nil {
-			log.Printf("Failed to initialize Redis: %v", err)
+			log.Printf("[gojs] Failed to initialize Redis: %v", err)
 			return nil, err
 		}
 	}
 	// 是否依赖 MySQL
 	if config.MySQL.Host != "" {
 		if err := mysql.InitializeMySQL(config.MySQL.Host, config.MySQL.Port, config.MySQL.DB, config.MySQL.User, config.MySQL.Password, config.MySQL.Timeout); err != nil {
-			log.Printf("Failed to initialize MySQL: %v", err)
+			log.Printf("[gojs] Failed to initialize MySQL: %v", err)
 			return nil, err
 		}
 	}
@@ -61,7 +61,7 @@ func (js *GoJSInstance) startServer(manager *server.ScriptManager) {
 	endpoint := js.Config.GOJS.Endpoint
 	title := js.Config.GOJS.Title
 
-	log.Printf("Starting web server on port %d...", port)
+	log.Printf("[gojs] Starting web server on port %d...", port)
 
 	// Create Gin router
 	router := gin.Default()
@@ -92,11 +92,11 @@ func (js *GoJSInstance) startServer(manager *server.ScriptManager) {
 	// Start HTTP server in a goroutine
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("HTTP server error: %v", err)
+			log.Printf("[gojs] HTTP server error: %v", err)
 		}
 	}()
 
-	log.Printf("Web server started: http://127.0.0.1:%d", port)
+	log.Printf("GoJS web server started: http://127.0.0.1:%d", port)
 
 	js.Server = httpServer
 }
@@ -104,7 +104,7 @@ func (js *GoJSInstance) startServer(manager *server.ScriptManager) {
 func (js *GoJSInstance) StopServer() {
 	if js.Server != nil {
 		if err := js.Server.Shutdown(context.Background()); err != nil {
-			log.Printf("HTTP server shutdown error: %v", err)
+			log.Printf("[gojs] HTTP server shutdown error: %v", err)
 		}
 	}
 }
@@ -119,10 +119,18 @@ func (js *GoJSInstance) Wait() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Printf("Shutting down web server...")
+	log.Printf("[gojs] Shutting down web server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := js.Server.Shutdown(ctx); err != nil {
-		log.Printf("HTTP server shutdown error: %v", err)
+		log.Printf("[gojs] HTTP server shutdown error: %v", err)
 	}
+}
+
+func (js *GoJSInstance) Update(scriptName string, script string) {
+	js.ScriptManager.Store(scriptName, script)
+}
+
+func (js *GoJSInstance) Execute(scriptName string, params map[string]interface{}) (interface{}, error) {
+	return js.ScriptManager.Call(scriptName, params)
 }

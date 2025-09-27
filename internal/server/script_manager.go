@@ -107,13 +107,13 @@ func (h *ScriptManager) executeInner(c *gin.Context, taskName string, isPost boo
 	elapsedMs := float64(elapsedTime.Nanoseconds()) / 1e6
 
 	if err != nil {
-		log.Printf("Error executing task '%s': %v, elapsed %.2f ms", taskName, err, elapsedMs)
+		log.Printf("[gojs] Error executing task '%s': %v, elapsed %.2f ms", taskName, err, elapsedMs)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   err.Error(),
 		})
 	} else {
-		log.Printf("Task '%s' executed successfully， %.2f ms", taskName, elapsedMs)
+		log.Printf("[gojs] Task '%s' executed successfully， %.2f ms", taskName, elapsedMs)
 
 		if result != nil {
 			resultType := reflect.TypeOf(result)
@@ -133,6 +133,41 @@ func (h *ScriptManager) executeInner(c *gin.Context, taskName string, isPost boo
 			"data":       result,
 		})
 	}
+}
+
+func (h *ScriptManager) Call(taskName string, params map[string]interface{}) (interface{}, error) {
+	scriptCache := h.ScriptPool.Cache
+	exists, err := scriptCache.ScriptExists(taskName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking script existence: %v", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("task script '%s' not found", taskName)
+	}
+
+	// Execute script
+	startTime := time.Now()
+
+	result, err := executeJavaScript(taskName, params)
+
+	elapsedTime := time.Since(startTime)
+	elapsedMs := float64(elapsedTime.Nanoseconds()) / 1e6
+
+	if err != nil {
+		return nil, fmt.Errorf("error executing task '%s': %v, elapsed %.2f ms", taskName, err, elapsedMs)
+	}
+
+	if result != nil {
+		resultType := reflect.TypeOf(result)
+		if resultType.Kind() == reflect.Map && resultType.Key().Kind() == reflect.String {
+			m := result.(map[string]interface{})
+			if _, ok := m["data"]; ok {
+				// return m["data"] as the final result
+				return m["data"], nil
+			}
+		}
+	}
+	return result, nil
 }
 
 func (h *ScriptManager) GetScript(c *gin.Context) {
@@ -222,6 +257,11 @@ func (h *ScriptManager) SaveScript(c *gin.Context) {
 		"status":  "success",
 		"message": fmt.Sprintf("Task script '%s' saved successfully", taskName),
 	})
+}
+
+func (h *ScriptManager) Store(name string, code string) error {
+	scriptCache := h.ScriptPool.Cache
+	return scriptCache.StoreScript(name, code)
 }
 
 func (h *ScriptManager) DeleteScript(c *gin.Context) {

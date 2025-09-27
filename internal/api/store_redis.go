@@ -20,14 +20,14 @@ func NewScriptRedisStore(groupName string, redis *redis.Client) *ScriptRedisStor
 func (s *ScriptRedisStore) Load(callback ScriptLoadCallback) {
 	scriptNames, err := s.List()
 	if err != nil {
-		log.Printf("Failed to list scripts from Redis: %v", err)
+		log.Printf("[gojs] Failed to list scripts from Redis: %v", err)
 		return
 	}
 
 	for _, name := range scriptNames {
 		code, err := s.Get(name)
 		if err != nil {
-			log.Printf("Failed to get script '%s' from Redis: %v", name, err)
+			log.Printf("[gojs] Failed to get script '%s' from Redis: %v", name, err)
 			continue
 		}
 
@@ -42,7 +42,7 @@ func (s *ScriptRedisStore) Save(scriptName string, scriptCode string) error {
 
 	err := s.Redis.HSet(context.Background(), s.Group, scriptName, scriptCode).Err()
 	if err != nil {
-		log.Printf("Failed to store script %s in Redis: %v", scriptName, err)
+		log.Printf("[gojs] Failed to store script %s in Redis: %v", scriptName, err)
 		return err
 	}
 
@@ -69,7 +69,7 @@ func (s *ScriptRedisStore) Delete(scriptName string) error {
 
 	err := s.Redis.HDel(context.Background(), s.Group, scriptName).Err()
 	if err != nil {
-		log.Printf("Failed to delete script %s from Redis: %v", scriptName, err)
+		log.Printf("[gojs] Failed to delete script %s from Redis: %v", scriptName, err)
 		return err
 	}
 
@@ -83,7 +83,7 @@ func (s *ScriptRedisStore) List() ([]string, error) {
 
 	scriptNames, err := s.Redis.HKeys(context.Background(), s.Group).Result()
 	if err != nil {
-		log.Printf("Failed to list scripts from Redis: %v", err)
+		log.Printf("[gojs] Failed to list scripts from Redis: %v", err)
 		return nil, err
 	}
 

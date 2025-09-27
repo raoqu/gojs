@@ -58,12 +58,12 @@ func LoadConfig(yamlFilePath string) *Config {
 
 	data, err := os.ReadFile(yamlFilePath)
 	if err != nil {
-		log.Printf("%s: %v", "Warning: Could not read YAML config file", err)
+		log.Printf("[gojs] %s: %v", "Warning: Could not read YAML config file", err)
 		return nil
 	}
 
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		log.Printf("%s: %v", "Warning: Could not parse YAML config file", err)
+		log.Printf("[gojs] %s: %v", "Warning: Could not parse YAML config file", err)
 		return nil
 	}
 

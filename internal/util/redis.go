@@ -24,11 +24,11 @@ func CreateRedisConn(addr string, db int, password string) (*redis.Client, error
 	// Test Redis connection
 	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Printf("Warning: Could not connect to Redis: %v", err)
-		log.Printf("Redis operations will fail. Please ensure Redis is running on localhost:6379")
+		log.Printf("[gojs] Warning: Could not connect to Redis: %v", err)
+		log.Printf("[gojs] Redis operations will fail. Please ensure Redis is running on localhost:6379")
 		return nil, err
 	} else {
-		log.Printf("Successfully connected to Redis %s, db %d\n", addr, db)
+		log.Printf("[gojs] Successfully connected to Redis %s, db %d\n", addr, db)
 	}
 	return client, nil
 }

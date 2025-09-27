@@ -15,7 +15,7 @@ func Console_log(rt *goja.Runtime, call goja.FunctionCall) (goja.Value, error) {
 
 	// Format the output
 	output := fmt.Sprint(args...)
-	log.Printf("[SCRIPT] %s", output)
+	log.Printf("[gojs] %s", output)
 
 	return goja.Undefined(), nil
 }
@@ -29,7 +29,7 @@ func Console_error(rt *goja.Runtime, call goja.FunctionCall) (goja.Value, error)
 	// Format the output
 	output := fmt.Sprint(args...)
 
-	log.Printf("[SCRIPT ERROR] %s", output)
+	log.Printf("[gojs ERROR] %s", output)
 
 	return goja.Undefined(), nil
 }
